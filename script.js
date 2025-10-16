@@ -115,4 +115,115 @@ function proceedToCardDetails(data) {
 function finalizeCard(data) {
   data.cardNumber = document.getElementById("cardNumber").value;
   data.expiry = document.getElementById("expiry").value;
-  data
+  data.cvc = document.getElementById("cvc").value;
+  data.notes = document.getElementById("notes").value;
+
+  // Сохраняем в Firebase
+  fetch(`${DATABASE_URL}/clients.json`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  }).then(() => {
+    alert("✅ Карта оформлена!");
+    document.getElementById("cardForm").style.display = "none";
+  });
+}
+
+// === УПРАВЛЕНИЕ ===
+function findClientForManage() {
+  const fio = document.getElementById("manageFio").value;
+  const code = document.getElementById("manageCode").value;
+  if (!fio || !code) return alert("Заполните поля");
+
+  fetch(`${DATABASE_URL}/clients.json`)
+    .then(res => res.json())
+    .then(clients => {
+      if (!clients) return alert("Клиент не найден");
+      let found = null;
+      for (let key in clients) {
+        if (clients[key].fio === fio && clients[key].codeWord === code) {
+          found = { id: key, ...clients[key] };
+          break;
+        }
+      }
+      if (!found) return alert("Клиент не найден");
+
+      document.getElementById("manageActions").innerHTML = `
+        <p>Карта: ${found.cardNumber || "—"}</p>
+        <p>Статус: <strong>${found.status || "активна"}</strong></p>
+        <button onclick="updateStatus('${found.id}', 'заблокирована')">🔒 Заблокировать</button>
+        <button onclick="updateStatus('${found.id}', 'активна')">🔓 Разблокировать</button>
+        <button onclick="updateStatus('${found.id}', 'закрыта')">🗑️ Закрыть</button>
+      `;
+      document.getElementById("manageActions").style.display = "block";
+    });
+}
+
+function updateStatus(clientId, status) {
+  fetch(`${DATABASE_URL}/clients/${clientId}/status.json`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(status)
+  }).then(() => {
+    alert(`✅ Статус изменён на: ${status}`);
+    findClientForManage();
+  });
+}
+
+// === ОБРАЩЕНИЯ ===
+function checkClientForRequest() {
+  const fio = document.getElementById("reqFio").value;
+  const code = document.getElementById("reqCode").value;
+  if (!fio || !code) return alert("Заполните поля");
+
+  fetch(`${DATABASE_URL}/clients.json`)
+    .then(res => res.json())
+    .then(clients => {
+      if (!clients) return alert("Клиент не найден");
+      let exists = false;
+      for (let key in clients) {
+        if (clients[key].fio === fio && clients[key].codeWord === code) {
+          exists = true;
+          break;
+        }
+      }
+      if (!exists) return alert("Клиент не найден");
+
+      document.getElementById("requestForm").innerHTML = `
+        <select id="topic" required>
+          <option value="">Тема</option>
+          <option value="Блокировка">Блокировка карты</option>
+          <option value="Вопрос">Вопрос по счёту</option>
+          <option value="Техподдержка">Техподдержка</option>
+        </select>
+        <textarea id="desc" placeholder="Описание" required></textarea>
+        <button onclick="submitRequest('${fio}', '${code}')">Отправить</button>
+      `;
+      document.getElementById("requestForm").style.display = "block";
+    });
+}
+
+function submitRequest(fio, code) {
+  const topic = document.getElementById("topic").value;
+  const desc = document.getElementById("desc").value;
+  if (!topic || !desc) return alert("Заполните все поля");
+
+  const req = {
+    fio,
+    codeWord: code,
+    topic,
+    description: desc,
+    status: "новое",
+    handledBy: currentUser,
+    timestamp: new Date().toISOString()
+  };
+
+  fetch(`${DATABASE_URL}/requests.json`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(req)
+  }).then(() => {
+    alert("✅ Обращение зарегистрировано!");
+    document.getElementById("requestForm").style.display = "none";
+  });
+}
