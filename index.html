@@ -7,9 +7,10 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container" id="loginScreen">
+  <!-- Экран входа -->
+  <div id="loginScreen">
     <div class="card">
-      <h2>🏦 Ренессанс Банк</h2>
+      <h2>Ренессанс Банк</h2>
       <input type="text" id="login" placeholder="Логин" autocomplete="off" />
       <input type="password" id="password" placeholder="Пароль" />
       <button onclick="login()">Войти</button>
@@ -17,59 +18,25 @@
     </div>
   </div>
 
-  <div class="container" id="mainScreen" style="display:none;">
-    <div class="header">
-      <h2>Ренессанс Банк — Сотрудник</h2>
-      <span id="currentUserLabel"></span>
-      <button onclick="logout()" class="btn-logout">Выйти</button>
+  <!-- Основной экран -->
+  <div id="mainScreen" style="display:none;">
+    <h2>Ренессанс Банк — Сотрудник</h2>
+    <div id="menu">
+      <button onclick="showSection('cards')">Оформить карту</button>
+      <button onclick="showSection('manage')">Управление картой</button>
+      <button onclick="showSection('request')">Обращение</button>
+      <button onclick="showSection('archive')">Архив</button>
+      <button id="btnNormal" style="display:none;">Все обращения</button>
+      <button id="btnUrgent" style="display:none;">Ускоренные</button>
+      <button onclick="logout()" style="float:right;">Выйти</button>
     </div>
 
-    <div class="menu" id="mainMenu">
-      <button onclick="showSection('cards')">Оформить карту (Ctrl+1)</button>
-      <button onclick="showSection('manage')">Управление (Ctrl+2)</button>
-      <button onclick="showSection('request')">Обращение (Ctrl+3)</button>
-      <button onclick="showSection('archive')">Архив (Ctrl+4)</button>
-      <!-- Для renessans -->
-      <button id="btnNormalRequests" style="display:none;">Обычные обращения (Ctrl+5)</button>
-      <button id="btnUrgentRequests" style="display:none;">Ускоренные (Ctrl+6)</button>
-    </div>
-
-    <!-- Оформление карты -->
     <div id="cardsSection" class="section">...</div>
-
-    <!-- Управление -->
     <div id="manageSection" class="section" style="display:none;">...</div>
-
-    <!-- Обращение -->
-    <div id="requestSection" class="section" style="display:none;">
-      <h3>Проверить обращение</h3>
-      <input type="text" id="checkFio" placeholder="ФИО клиента" />
-      <input type="password" id="checkCode" placeholder="Кодовое слово" />
-      <button onclick="checkExistingRequest()">Проверить</button>
-      <div id="checkResult" style="margin-top:15px;"></div>
-    </div>
-
-    <!-- Архив -->
-    <div id="archiveSection" class="section" style="display:none;">
-      <h3>Архив операций</h3>
-      <input type="text" id="archiveFio" placeholder="ФИО клиента" />
-      <input type="password" id="archiveCode" placeholder="Кодовое слово" />
-      <input type="date" id="dateFrom" /> → <input type="date" id="dateTo" />
-      <button onclick="loadClientArchive()">Показать архив</button>
-      <div id="archiveResult" style="margin-top:15px;"></div>
-    </div>
-
-    <!-- Обычные обращения (только renessans) -->
-    <div id="normalRequestsSection" class="section" style="display:none;">
-      <h3>Все обращения</h3>
-      <div id="allRequestsList"></div>
-    </div>
-
-    <!-- Ускоренные обращения (только renessans) -->
-    <div id="urgentRequestsSection" class="section" style="display:none;">
-      <h3>Ускоренные обращения</h3>
-      <div id="urgentRequestsList"></div>
-    </div>
+    <div id="requestSection" class="section" style="display:none;">...</div>
+    <div id="archiveSection" class="section" style="display:none;">...</div>
+    <div id="normalSection" class="section" style="display:none;">...</div>
+    <div id="urgentSection" class="section" style="display:none;">...</div>
   </div>
 
   <script src="script.js"></script>
