@@ -10,7 +10,7 @@
   <!-- Экран входа -->
   <div id="loginScreen">
     <div class="card">
-      <h2>Ренессанс Банк</h2>
+      <h2>🏦 Ренессанс Банк</h2>
       <input type="text" id="login" placeholder="Логин" autocomplete="off" />
       <input type="password" id="password" placeholder="Пароль" />
       <button onclick="login()">Войти</button>
@@ -20,23 +20,26 @@
 
   <!-- Основной экран -->
   <div id="mainScreen" style="display:none;">
-    <h2>Ренессанс Банк — Сотрудник</h2>
-    <div id="menu">
+    <div class="header">
+      <h2>Ренессанс Банк — Сотрудник</h2>
+      <button onclick="logout()" class="btn-logout">Выйти</button>
+    </div>
+
+    <div class="menu" id="mainMenu">
       <button onclick="showSection('cards')">Оформить карту</button>
-      <button onclick="showSection('manage')">Управление</button>
+      <button onclick="showSection('manage')">Управление картой</button>
       <button onclick="showSection('request')">Обращение</button>
       <button onclick="showSection('archive')">Архив</button>
-      <button id="btnNormal" style="display:none;">Все обращения</button>
-      <button id="btnUrgent" style="display:none;">Ускоренные</button>
-      <button onclick="logout()" style="float:right;">Выйти</button>
+      <button id="btnNormalRequests" style="display:none;">Все обращения</button>
+      <button id="btnUrgentRequests" style="display:none;">Ускоренные</button>
     </div>
 
     <div id="cardsSection" class="section"></div>
     <div id="manageSection" class="section" style="display:none;"></div>
     <div id="requestSection" class="section" style="display:none;"></div>
     <div id="archiveSection" class="section" style="display:none;"></div>
-    <div id="normalSection" class="section" style="display:none;"></div>
-    <div id="urgentSection" class="section" style="display:none;"></div>
+    <div id="normalRequestsSection" class="section" style="display:none;"></div>
+    <div id="urgentRequestsSection" class="section" style="display:none;"></div>
   </div>
 
   <script src="script.js"></script>
