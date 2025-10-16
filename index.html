@@ -1,21 +1,60 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Ренессанс Банк</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div id="login">
-    <h2>Вход в систему</h2>
-    <input type="text" id="loginInput" placeholder="Логин">
-    <input type="password" id="passInput" placeholder="Пароль">
-    <button onclick="login()">Войти</button>
-    <p id="error"></p>
+  <div class="container" id="loginScreen">
+    <div class="card">
+      <h2>🏦 Ренессанс Банк</h2>
+      <input type="text" id="login" placeholder="Логин" autocomplete="off" />
+      <input type="password" id="password" placeholder="Пароль" />
+      <button onclick="login()">Войти</button>
+      <p id="error" class="error"></p>
+    </div>
   </div>
 
-  <div id="main" style="display:none;">
-    <h2>Добро пожаловать!</h2>
-    <button onclick="logout()">Выйти</button>
+  <div class="container" id="mainScreen" style="display:none;">
+    <div class="header">
+      <h2>Ренессанс Банк — Сотрудник</h2>
+      <button onclick="logout()" class="btn-logout">Выйти</button>
+    </div>
+
+    <div class="menu">
+      <button onclick="showSection('cards')">Оформить карту</button>
+      <button onclick="showSection('manage')">Управление картой</button>
+      <button onclick="showSection('request')">Обращение</button>
+    </div>
+
+    <!-- Оформление карты -->
+    <div id="cardsSection" class="section">
+      <h3>Выберите тип карты</h3>
+      <button onclick="selectCardType('дебетовая')">Дебетовая</button>
+      <button onclick="selectCardType('детская')">Детская</button>
+      <button onclick="selectCardType('кредитная')">Кредитная</button>
+      <div id="cardForm" style="display:none;"></div>
+    </div>
+
+    <!-- Управление -->
+    <div id="manageSection" class="section" style="display:none;">
+      <h3>Управление картой</h3>
+      <input type="text" id="manageFio" placeholder="ФИО клиента" />
+      <input type="password" id="manageCode" placeholder="Кодовое слово" />
+      <button onclick="findClientForManage()">Найти</button>
+      <div id="manageActions" style="display:none; margin-top:15px;"></div>
+    </div>
+
+    <!-- Обращение -->
+    <div id="requestSection" class="section" style="display:none;">
+      <h3>Регистрация обращения</h3>
+      <input type="text" id="reqFio" placeholder="ФИО клиента" />
+      <input type="password" id="reqCode" placeholder="Кодовое слово" />
+      <button onclick="checkClientForRequest()">Проверить</button>
+      <div id="requestForm" style="display:none; margin-top:15px;"></div>
+    </div>
   </div>
 
   <script src="script.js"></script>
