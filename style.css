@@ -1,13 +1,13 @@
 body {
   font-family: Arial, sans-serif;
-  background: #f0f4f8;
+  background: #f5f7fa;
   margin: 0;
   padding: 20px;
 }
 
 .card {
   max-width: 400px;
-  margin: 100px auto;
+  margin: 80px auto;
   background: white;
   padding: 30px;
   border-radius: 10px;
@@ -37,7 +37,7 @@ button:hover {
 }
 
 #mainScreen {
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
 }
 
@@ -57,4 +57,13 @@ button:hover {
 .error {
   color: red;
   margin-top: 10px;
+}
+
+.scoring {
+  background: #e3f2fd;
+  padding: 15px;
+  border-radius: 6px;
+  margin: 15px 0;
+  text-align: center;
+  font-weight: bold;
 }
