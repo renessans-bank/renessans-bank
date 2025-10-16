@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Ренессанс Банк</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="login">
+    <h2>Вход в систему</h2>
+    <input type="text" id="loginInput" placeholder="Логин">
+    <input type="password" id="passInput" placeholder="Пароль">
+    <button onclick="login()">Войти</button>
+    <p id="error"></p>
+  </div>
+
+  <div id="main" style="display:none;">
+    <h2>Добро пожаловать!</h2>
+    <button onclick="logout()">Выйти</button>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
