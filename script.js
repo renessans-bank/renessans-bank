@@ -1,3 +1,4 @@
+// === НАСТРОЙКИ ===
 const DATABASE_URL = "https://renessans-bank-3df94-default-rtdb.europe-west1.firebasedatabase.app";
 const STAFF = {
   "Ирина": "8992",
@@ -9,6 +10,7 @@ const STAFF = {
 
 let currentUser = null;
 
+// === ИНИЦИАЛИЗАЦИЯ ===
 document.addEventListener('DOMContentLoaded', () => {
   const pass = document.getElementById("password");
   if (pass) {
@@ -66,6 +68,7 @@ function initSections() {
   }
 }
 
+// === АВТОРИЗАЦИЯ ===
 function login() {
   const l = document.getElementById("login").value.trim();
   const p = document.getElementById("password").value;
@@ -101,7 +104,7 @@ function showSection(id) {
   if (id === 'urgentRequests' && currentUser === 'renessans') loadUrgentRequests();
 }
 
-// === ОФОРМЛЕНИЕ КАРТ (всё как было) ===
+// === ОФОРМЛЕНИЕ КАРТ ===
 function selectCardType(type) {
   let form = `<h3>Анкета: ${type} карта</h3>`;
   form += `
@@ -209,7 +212,7 @@ function finalizeCard(data) {
   }).catch(() => alert("❌ Ошибка"));
 }
 
-// === УПРАВЛЕНИЕ (всё как было + кнопка архива) ===
+// === УПРАВЛЕНИЕ КАРТОЙ ===
 function findClientForManage() {
   const fio = document.getElementById("manageFio").value;
   const code = document.getElementById("manageCode").value;
@@ -257,7 +260,6 @@ function findClientForManage() {
           <button onclick="updateStatus('${found.id}', 'активна')">🔓 Разблокировать</button>
         `;
       }
-      // === КНОПКА АРХИВАЦИИ ОБРАЩЕНИЯ (новая) ===
       html += `<button onclick="archiveRequestByClient('${found.fio}', '${found.codeWord}')" style="background:#6c757d;color:white;margin-top:10px;">📦 Отправить обращения в архив</button>`;
       document.getElementById("manageActions").innerHTML = html;
     });
@@ -295,7 +297,7 @@ function updateStatus(clientId, status) {
   });
 }
 
-// === ОБРАЩЕНИЯ (с кнопкой архивации) ===
+// === ОБРАЩЕНИЯ ===
 function checkExistingRequest() {
   const fio = document.getElementById("checkFio").value;
   const code = document.getElementById("checkCode").value;
@@ -330,11 +332,21 @@ function checkExistingRequest() {
         if (currentUser !== "renessans") {
           html += `<button onclick="markAsUrgent('${found.id}')">Ускорить</button>`;
         }
-        // === ГЛАВНОЕ: КНОПКА "ОТПРАВИТЬ В АРХИВ" ===
         html += `<button onclick="archiveRequest('${found.id}')" style="background:#6c757d;color:white;margin-top:10px;">Отправить в архив</button>`;
         document.getElementById("checkResult").innerHTML = html;
       }
     });
+}
+
+function markAsUrgent(reqId) {
+  fetch(`${DATABASE_URL}/requests/${reqId}/urgent.json`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(true)
+  }).then(() => {
+    alert("✅ Обращение ускорено!");
+    checkExistingRequest();
+  });
 }
 
 function archiveRequest(reqId) {
@@ -370,7 +382,7 @@ function archiveRequestByClient(fio, code) {
     });
 }
 
-// === АРХИВ (показывает ВСЁ, включая архивированные) ===
+// === АРХИВ ===
 function loadClientArchive() {
   const fio = document.getElementById("archiveFio").value;
   const code = document.getElementById("archiveCode").value;
@@ -416,7 +428,7 @@ function loadClientArchive() {
   });
 }
 
-// === ВСЁ, ЧТО БЫЛО У RENESSANS (сохранено полностью) ===
+// === RENESSANS: ВСЕ ОБРАЩЕНИЯ ===
 function loadAllRequests() {
   fetch(`${DATABASE_URL}/requests.json`)
     .then(res => res.json())
@@ -463,6 +475,7 @@ function loadUrgentRequests() {
     });
 }
 
+// === НОВОЕ: КНОПКА АРХИВА ПОСЛЕ ОТВЕТА (для renessans) ===
 function sendResponse(reqId) {
   const resp = document.getElementById(`resp-${reqId}`) || document.getElementById(`respUrgent-${reqId}`);
   if (!resp || !resp.value.trim()) return alert("Введите ответ");
@@ -471,13 +484,29 @@ function sendResponse(reqId) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(resp.value.trim())
   }).then(() => {
+    if (currentUser === "renessans") {
+      const archiveBtn = document.createElement("button");
+      archiveBtn.textContent = "📦 Отправить в архив";
+      archiveBtn.style.marginTop = "10px";
+      archiveBtn.style.background = "#6c757d";
+      archiveBtn.style.color = "white";
+      archiveBtn.style.border = "none";
+      archiveBtn.style.padding = "8px 12px";
+      archiveBtn.style.borderRadius = "4px";
+      archiveBtn.style.cursor = "pointer";
+      archiveBtn.onclick = () => {
+        archiveRequest(reqId);
+        archiveBtn.remove();
+      };
+      resp.parentNode.appendChild(archiveBtn);
+    }
     alert("✅ Ответ отправлен!");
     if (document.getElementById("normalRequestsSection").style.display !== "none") loadAllRequests();
     if (document.getElementById("urgentRequestsSection").style.display !== "none") loadUrgentRequests();
   });
 }
 
-// === НОВОЕ: ПРОСМОТР КЛИЕНТОВ (только для renessans) ===
+// === ПРОСМОТР КЛИЕНТОВ (renessans) ===
 function loadAllClients() {
   fetch(`${DATABASE_URL}/clients.json`)
     .then(res => res.json())
