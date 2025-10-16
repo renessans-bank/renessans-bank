@@ -8,11 +8,12 @@ body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: #f0f4f8;
   color: #333;
+  line-height: 1.6;
 }
 
 .container {
-  max-width: 800px;
-  margin: 40px auto;
+  max-width: 900px;
+  margin: 30px auto;
   padding: 20px;
 }
 
@@ -29,7 +30,7 @@ body {
   color: #003366;
 }
 
-input {
+input, select, textarea {
   width: 100%;
   padding: 12px;
   margin: 10px 0;
@@ -47,15 +48,25 @@ button {
   border-radius: 6px;
   cursor: pointer;
   font-size: 16px;
+  transition: background 0.2s;
 }
 
 button:hover {
   background: #0056b3;
 }
 
+.btn-logout {
+  background: #dc3545;
+}
+
+.btn-logout:hover {
+  background: #c82333;
+}
+
 .error {
-  color: red;
+  color: #e74c3c;
   margin-top: 10px;
+  font-weight: bold;
 }
 
 .header {
@@ -63,15 +74,27 @@ button:hover {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  flex-wrap: wrap;
 }
 
-.btn-logout {
-  background: #dc3545;
+.header h2 {
+  color: #003366;
+  margin: 0;
 }
 
 .menu {
   text-align: center;
   margin: 20px 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.menu button {
+  white-space: nowrap;
+  font-size: 14px;
+  padding: 10px 12px;
 }
 
 .section {
@@ -80,4 +103,74 @@ button:hover {
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   margin-top: 20px;
+}
+
+/* Стили для обращений */
+.request-item {
+  background: #f8f9fa;
+  padding: 16px;
+  border-left: 4px solid #007bff;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.request-item.urgent {
+  border-left-color: #e74c3c;
+  background: #fff5f5;
+}
+
+.request-item h4 {
+  margin-bottom: 8px;
+  color: #2c3e50;
+}
+
+.request-item p {
+  margin: 6px 0;
+  color: #555;
+}
+
+.request-item textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  resize: vertical;
+  min-height: 60px;
+  margin: 10px 0;
+}
+
+/* Архив */
+#archiveResult ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+#archiveResult li {
+  background: #f1f8ff;
+  padding: 10px;
+  margin: 6px 0;
+  border-radius: 6px;
+  border-left: 3px solid #007bff;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .container {
+    margin: 10px;
+    padding: 15px;
+  }
+  
+  .menu {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .header h2 {
+    margin-bottom: 10px;
+  }
 }
