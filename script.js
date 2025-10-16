@@ -101,6 +101,7 @@ function showSection(id) {
   if (id === 'urgentRequests' && currentUser === 'renessans') loadUrgentRequests();
 }
 
+// === ОФОРМЛЕНИЕ КАРТ (всё как было) ===
 function selectCardType(type) {
   let form = `<h3>Анкета: ${type} карта</h3>`;
   form += `
@@ -208,6 +209,7 @@ function finalizeCard(data) {
   }).catch(() => alert("❌ Ошибка"));
 }
 
+// === УПРАВЛЕНИЕ (всё как было + кнопка архива) ===
 function findClientForManage() {
   const fio = document.getElementById("manageFio").value;
   const code = document.getElementById("manageCode").value;
@@ -253,9 +255,10 @@ function findClientForManage() {
         html += `
           <button onclick="updateStatus('${found.id}', 'заблокирована')">🔒 Заблокировать</button>
           <button onclick="updateStatus('${found.id}', 'активна')">🔓 Разблокировать</button>
-          <button onclick="archiveRequestByClient('${found.id}')">📦 В архив</button>
         `;
       }
+      // === КНОПКА АРХИВАЦИИ ОБРАЩЕНИЯ (новая) ===
+      html += `<button onclick="archiveRequestByClient('${found.fio}', '${found.codeWord}')" style="background:#6c757d;color:white;margin-top:10px;">📦 Отправить обращения в архив</button>`;
       document.getElementById("manageActions").innerHTML = html;
     });
 }
@@ -292,6 +295,7 @@ function updateStatus(clientId, status) {
   });
 }
 
+// === ОБРАЩЕНИЯ (с кнопкой архивации) ===
 function checkExistingRequest() {
   const fio = document.getElementById("checkFio").value;
   const code = document.getElementById("checkCode").value;
@@ -326,21 +330,11 @@ function checkExistingRequest() {
         if (currentUser !== "renessans") {
           html += `<button onclick="markAsUrgent('${found.id}')">Ускорить</button>`;
         }
-        html += `<button onclick="archiveRequest('${found.id}')" style="background:#6c757d;color:white;">Отправить в архив</button>`;
+        // === ГЛАВНОЕ: КНОПКА "ОТПРАВИТЬ В АРХИВ" ===
+        html += `<button onclick="archiveRequest('${found.id}')" style="background:#6c757d;color:white;margin-top:10px;">Отправить в архив</button>`;
         document.getElementById("checkResult").innerHTML = html;
       }
     });
-}
-
-function markAsUrgent(reqId) {
-  fetch(`${DATABASE_URL}/requests/${reqId}/urgent.json`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(true)
-  }).then(() => {
-    alert("✅ Обращение ускорено!");
-    checkExistingRequest();
-  });
 }
 
 function archiveRequest(reqId) {
@@ -356,6 +350,27 @@ function archiveRequest(reqId) {
   });
 }
 
+function archiveRequestByClient(fio, code) {
+  if (!confirm("Отправить ВСЕ обращения клиента в архив?")) return;
+  fetch(`${DATABASE_URL}/requests.json`)
+    .then(res => res.json())
+    .then(requests => {
+      if (!requests) return;
+      for (let key in requests) {
+        if (requests[key].fio === fio && requests[key].codeWord === code) {
+          fetch(`${DATABASE_URL}/requests/${key}/archived.json`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(true)
+          });
+        }
+      }
+      alert("✅ Все обращения клиента отправлены в архив");
+      findClientForManage();
+    });
+}
+
+// === АРХИВ (показывает ВСЁ, включая архивированные) ===
 function loadClientArchive() {
   const fio = document.getElementById("archiveFio").value;
   const code = document.getElementById("archiveCode").value;
@@ -401,7 +416,7 @@ function loadClientArchive() {
   });
 }
 
-// === RENESSANS: ВСЕ ОБРАЩЕНИЯ ===
+// === ВСЁ, ЧТО БЫЛО У RENESSANS (сохранено полностью) ===
 function loadAllRequests() {
   fetch(`${DATABASE_URL}/requests.json`)
     .then(res => res.json())
@@ -462,7 +477,7 @@ function sendResponse(reqId) {
   });
 }
 
-// === ПРОСМОТР КЛИЕНТОВ (renessans) ===
+// === НОВОЕ: ПРОСМОТР КЛИЕНТОВ (только для renessans) ===
 function loadAllClients() {
   fetch(`${DATABASE_URL}/clients.json`)
     .then(res => res.json())
