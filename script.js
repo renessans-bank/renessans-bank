@@ -66,6 +66,14 @@ function initSections() {
       <div id="clientsList" style="margin-top:15px;"></div>
     `;
   }
+  if (document.getElementById("clientDatabaseSection")) {
+    document.getElementById("clientDatabaseSection").innerHTML = `
+      <h3>База данных клиентов</h3>
+      <input type="text" id="dbSearch" placeholder="Поиск по ФИО, паспорту, телефону" />
+      <button onclick="searchClientDatabase()">Найти</button>
+      <div id="dbResults" style="margin-top:15px;"></div>
+    `;
+  }
 }
 
 // === АВТОРИЗАЦИЯ ===
@@ -93,7 +101,7 @@ function logout() {
 }
 
 function showSection(id) {
-  const sections = ['cards','manage','request','archive','normalRequests','urgentRequests','viewClients'];
+  const sections = ['cards','manage','request','archive','normalRequests','urgentRequests','viewClients','clientDatabase'];
   sections.forEach(s => {
     const el = document.getElementById(s + "Section");
     if (el) el.style.display = "none";
@@ -506,6 +514,40 @@ function sendResponse(reqId) {
   });
 }
 
+// === БАЗА ДАННЫХ КЛИЕНТОВ (только для renessans) ===
+function searchClientDatabase() {
+  const query = document.getElementById("dbSearch").value.trim();
+  if (!query) return alert("Введите запрос");
+
+  fetch(`${DATABASE_URL}/clients.json`)
+    .then(res => res.json())
+    .then(clients => {
+      if (!clients) return document.getElementById("dbResults").innerHTML = "<p>Клиенты не найдены</p>";
+      let html = "<h4>Результаты поиска:</h4>";
+      for (let key in clients) {
+        const c = clients[key];
+        if (
+          c.fio.toLowerCase().includes(query.toLowerCase()) ||
+          c.passport.includes(query) ||
+          c.phone.includes(query)
+        ) {
+          html += `
+            <div style="border:1px solid #ddd; padding:10px; margin:8px 0; border-radius:4px;">
+              <strong>${c.fio}</strong> — ${c.type} карта<br>
+              Паспорт: ${c.passport}<br>
+              Телефон: ${c.phone}<br>
+              Email: ${c.email}<br>
+              Адрес: ${c.address}<br>
+              Статус: ${c.status || "активна"}<br>
+              <button onclick="viewFullClient('${c.fio}', '${c.codeWord}')">Просмотреть</button>
+            </div>
+          `;
+        }
+      }
+      document.getElementById("dbResults").innerHTML = html || "<p>Ничего не найдено</p>";
+    });
+}
+
 // === ПРОСМОТР КЛИЕНТОВ (renessans) ===
 function loadAllClients() {
   fetch(`${DATABASE_URL}/clients.json`)
@@ -586,6 +628,18 @@ function saveFullClientEdit(clientId) {
   }
   alert("✅ Изменения сохранены");
   loadAllClients();
+}
+
+// === ОЧИСТИТЬ ВСЕ ОБРАЩЕНИЯ (только для renessans) ===
+function clearAllRequests() {
+  if (!confirm("Удалить ВСЕ обращения? Это действие нельзя отменить.")) return;
+  fetch(`${DATABASE_URL}/requests.json`, {
+    method: "DELETE"
+  }).then(() => {
+    alert("✅ Все обращения удалены");
+    loadAllRequests();
+    loadUrgentRequests();
+  });
 }
 
 // === ЛОГИРОВАНИЕ ===
