@@ -40,11 +40,15 @@ function initSections() {
   }
   if (document.getElementById("requestSection")) {
     document.getElementById("requestSection").innerHTML = `
-      <h3>Проверить обращение</h3>
+      <h3>Работа с обращениями</h3>
+      <button onclick="showCreateForm()">➕ Создать обращение</button>
+      <hr>
+      <h4>Проверить обращение</h4>
       <input type="text" id="checkFio" placeholder="ФИО клиента" />
       <input type="password" id="checkCode" placeholder="Кодовое слово" />
       <button onclick="checkExistingRequest()">Проверить</button>
       <div id="checkResult" style="margin-top:15px;"></div>
+      <div id="createForm" style="display:none; margin-top:20px;"></div>
     `;
   }
   if (document.getElementById("archiveSection")) {
@@ -217,7 +221,7 @@ function finalizeCard(data) {
   }).catch(() => alert("❌ Ошибка"));
 }
 
-// === УПРАВЛЕНИЕ КАРТОЙ (ИСПРАВЛЕНО: скрытие данных от обычных сотрудников) ===
+// === УПРАВЛЕНИЕ КАРТОЙ ===
 function findClientForManage() {
   const fio = document.getElementById("manageFio").value;
   const code = document.getElementById("manageCode").value;
@@ -236,7 +240,6 @@ function findClientForManage() {
       }
       if (!found) return alert("Клиент не найден");
 
-      // === ТОЛЬКО RENESSANS ВИДИТ ПОЛНЫЕ ДАННЫЕ ===
       let html = "";
       if (currentUser === "renessans") {
         html = `
@@ -262,7 +265,6 @@ function findClientForManage() {
           <button onclick="saveClientEdit('${found.id}')">Сохранить</button>
         `;
       } else {
-        // Обычные сотрудники видят ТОЛЬКО статус и кнопки управления
         html = `
           <p>Клиент найден.</p>
           <p><strong>Статус карты:</strong> ${found.status || "активна"}</p>
@@ -308,6 +310,55 @@ function updateStatus(clientId, status) {
 }
 
 // === ОБРАЩЕНИЯ ===
+function showCreateForm() {
+  document.getElementById("createForm").style.display = "block";
+  document.getElementById("createForm").innerHTML = `
+    <h4>Новое обращение</h4>
+    <input type="text" id="newFio" placeholder="ФИО клиента" required />
+    <input type="password" id="newCode" placeholder="Кодовое слово" required />
+    <select id="newTopic" required>
+      <option value="">Тема</option>
+      <option value="Блокировка карты">Блокировка карты</option>
+      <option value="Вопрос по счёту">Вопрос по счёту</option>
+      <option value="Техподдержка">Техподдержка</option>
+      <option value="Другое">Другое</option>
+    </select>
+    <textarea id="newDesc" placeholder="Описание" required></textarea>
+    <button onclick="submitNewRequest()">Отправить обращение</button>
+  `;
+}
+
+function submitNewRequest() {
+  const fio = document.getElementById("newFio").value.trim();
+  const code = document.getElementById("newCode").value.trim();
+  const topic = document.getElementById("newTopic").value;
+  const desc = document.getElementById("newDesc").value.trim();
+
+  if (!fio || !code || !topic || !desc) {
+    alert("Заполните все поля");
+    return;
+  }
+
+  const req = {
+    fio,
+    codeWord: code,
+    topic,
+    description: desc,
+    status: "новое",
+    handledBy: currentUser,
+    timestamp: new Date().toISOString()
+  };
+
+  fetch(`${DATABASE_URL}/requests.json`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(req)
+  }).then(() => {
+    alert("✅ Обращение зарегистрировано!");
+    document.getElementById("createForm").style.display = "none";
+  });
+}
+
 function checkExistingRequest() {
   const fio = document.getElementById("checkFio").value;
   const code = document.getElementById("checkCode").value;
@@ -340,7 +391,7 @@ function checkExistingRequest() {
           html += `<p>Ответ ещё не поступил</p>`;
         }
         if (currentUser !== "renessans") {
-          html += `<button onclick="markAsUrgent('${found.id}')">Ускорить</button>`;
+          html += `<button onclick="markAsUrgent('${found.id}')">Ускорить обращение</button>`;
         }
         html += `<button onclick="archiveRequest('${found.id}')" style="background:#6c757d;color:white;margin-top:10px;">Отправить в архив</button>`;
         document.getElementById("checkResult").innerHTML = html;
@@ -485,7 +536,7 @@ function loadUrgentRequests() {
     });
 }
 
-// === КНОПКА АРХИВА ПОСЛЕ ОТВЕТА ===
+// === ОТВЕТ + АРХИВАЦИЯ ===
 function sendResponse(reqId) {
   const resp = document.getElementById(`resp-${reqId}`) || document.getElementById(`respUrgent-${reqId}`);
   if (!resp || !resp.value.trim()) return alert("Введите ответ");
@@ -516,7 +567,7 @@ function sendResponse(reqId) {
   });
 }
 
-// === БАЗА ДАННЫХ КЛИЕНТОВ (только для renessans) ===
+// === БАЗА ДАННЫХ КЛИЕНТОВ ===
 function searchClientDatabase() {
   const query = document.getElementById("dbSearch").value.trim();
   if (!query) return alert("Введите запрос");
@@ -550,7 +601,7 @@ function searchClientDatabase() {
     });
 }
 
-// === ПРОСМОТР КЛИЕНТОВ (только для renessans) ===
+// === ПРОСМОТР КЛИЕНТОВ ===
 function loadAllClients() {
   fetch(`${DATABASE_URL}/clients.json`)
     .then(res => res.json())
