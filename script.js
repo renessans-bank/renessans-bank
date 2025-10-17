@@ -1,4 +1,3 @@
-// === НАСТРОЙКИ ===
 const DATABASE_URL = "https://renessans-bank-3df94-default-rtdb.europe-west1.firebasedatabase.app";
 const STAFF = {
   "Ирина": "8992",
@@ -10,7 +9,6 @@ const STAFF = {
 
 let currentUser = null;
 
-// === ИНИЦИАЛИЗАЦИЯ ===
 document.addEventListener('DOMContentLoaded', () => {
   const pass = document.getElementById("password");
   if (pass) {
@@ -76,7 +74,6 @@ function initSections() {
   }
 }
 
-// === АВТОРИЗАЦИЯ ===
 function login() {
   const l = document.getElementById("login").value.trim();
   const p = document.getElementById("password").value;
@@ -85,7 +82,7 @@ function login() {
     document.getElementById("loginScreen").style.display = "none";
     document.getElementById("mainScreen").style.display = "block";
     if (l === "renessans") {
-      document.getElementById("renessansButtons").style.display = "inline";
+      document.getElementById("renessansOnly").style.display = "inline";
     }
   } else {
     document.getElementById("error").textContent = "Неверный логин или пароль";
@@ -220,7 +217,7 @@ function finalizeCard(data) {
   }).catch(() => alert("❌ Ошибка"));
 }
 
-// === УПРАВЛЕНИЕ КАРТОЙ ===
+// === УПРАВЛЕНИЕ КАРТОЙ (ИСПРАВЛЕНО: скрытие данных от обычных сотрудников) ===
 function findClientForManage() {
   const fio = document.getElementById("manageFio").value;
   const code = document.getElementById("manageCode").value;
@@ -239,16 +236,18 @@ function findClientForManage() {
       }
       if (!found) return alert("Клиент не найден");
 
-      let html = `
-        <p><strong>ФИО:</strong> ${found.fio}</p>
-        <p><strong>Паспорт:</strong> ${found.passport}</p>
-        <p><strong>Телефон:</strong> ${found.phone}</p>
-        <p><strong>Карта:</strong> ${found.cardNumber || "—"}</p>
-        <p><strong>Статус:</strong> ${found.status || "активна"}</p>
-      `;
-
+      // === ТОЛЬКО RENESSANS ВИДИТ ПОЛНЫЕ ДАННЫЕ ===
+      let html = "";
       if (currentUser === "renessans") {
-        html += `
+        html = `
+          <p><strong>ФИО:</strong> ${found.fio}</p>
+          <p><strong>Паспорт:</strong> ${found.passport}</p>
+          <p><strong>Телефон:</strong> ${found.phone}</p>
+          <p><strong>Email:</strong> ${found.email}</p>
+          <p><strong>Адрес:</strong> ${found.address}</p>
+          <p><strong>Кодовое слово:</strong> ${found.codeWord}</p>
+          <p><strong>Карта:</strong> ${found.cardNumber || "—"}</p>
+          <p><strong>Статус:</strong> ${found.status || "активна"}</p>
           <hr>
           <h4>Редактирование</h4>
           <input type="text" id="editFio" value="${found.fio}" />
@@ -263,12 +262,15 @@ function findClientForManage() {
           <button onclick="saveClientEdit('${found.id}')">Сохранить</button>
         `;
       } else {
-        html += `
+        // Обычные сотрудники видят ТОЛЬКО статус и кнопки управления
+        html = `
+          <p>Клиент найден.</p>
+          <p><strong>Статус карты:</strong> ${found.status || "активна"}</p>
           <button onclick="updateStatus('${found.id}', 'заблокирована')">🔒 Заблокировать</button>
           <button onclick="updateStatus('${found.id}', 'активна')">🔓 Разблокировать</button>
+          <button onclick="archiveRequestByClient('${found.fio}', '${found.codeWord}')" style="background:#6c757d;color:white;margin-top:10px;">📦 Отправить обращения в архив</button>
         `;
       }
-      html += `<button onclick="archiveRequestByClient('${found.fio}', '${found.codeWord}')" style="background:#6c757d;color:white;margin-top:10px;">📦 Отправить обращения в архив</button>`;
       document.getElementById("manageActions").innerHTML = html;
     });
 }
@@ -406,7 +408,7 @@ function loadClientArchive() {
     if (clients) {
       for (let key in clients) {
         if (clients[key].fio === fio && clients[key].codeWord === code) {
-          html += `<p>💳 ${clients[key].type} карта: ${clients[key].cardNumber || "—"}, статус: ${clients[key].status || "активна"}</p>`;
+          html += `<p>💳 ${clients[key].type} карта, статус: ${clients[key].status || "активна"}</p>`;
         }
       }
     }
@@ -483,7 +485,7 @@ function loadUrgentRequests() {
     });
 }
 
-// === НОВОЕ: КНОПКА АРХИВА ПОСЛЕ ОТВЕТА (для renessans) ===
+// === КНОПКА АРХИВА ПОСЛЕ ОТВЕТА ===
 function sendResponse(reqId) {
   const resp = document.getElementById(`resp-${reqId}`) || document.getElementById(`respUrgent-${reqId}`);
   if (!resp || !resp.value.trim()) return alert("Введите ответ");
@@ -548,7 +550,7 @@ function searchClientDatabase() {
     });
 }
 
-// === ПРОСМОТР КЛИЕНТОВ (renessans) ===
+// === ПРОСМОТР КЛИЕНТОВ (только для renessans) ===
 function loadAllClients() {
   fetch(`${DATABASE_URL}/clients.json`)
     .then(res => res.json())
@@ -630,7 +632,7 @@ function saveFullClientEdit(clientId) {
   loadAllClients();
 }
 
-// === ОЧИСТИТЬ ВСЕ ОБРАЩЕНИЯ (только для renessans) ===
+// === ОЧИСТИТЬ ВСЕ ОБРАЩЕНИЯ ===
 function clearAllRequests() {
   if (!confirm("Удалить ВСЕ обращения? Это действие нельзя отменить.")) return;
   fetch(`${DATABASE_URL}/requests.json`, {
