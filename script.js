@@ -309,7 +309,7 @@ function updateStatus(clientId, status) {
   });
 }
 
-// === ОБРАЩЕНИЯ ===
+// === СОЗДАНИЕ ОБРАЩЕНИЯ (ТОЛЬКО ДЛЯ ЗАРЕГИСТРИРОВАННЫХ КЛИЕНТОВ) ===
 function showCreateForm() {
   document.getElementById("createForm").style.display = "block";
   document.getElementById("createForm").innerHTML = `
@@ -339,26 +339,51 @@ function submitNewRequest() {
     return;
   }
 
-  const req = {
-    fio,
-    codeWord: code,
-    topic,
-    description: desc,
-    status: "новое",
-    handledBy: currentUser,
-    timestamp: new Date().toISOString()
-  };
+  // Проверка: существует ли клиент в базе?
+  fetch(`${DATABASE_URL}/clients.json`)
+    .then(res => res.json())
+    .then(clients => {
+      if (!clients) {
+        alert("❌ Клиент не найден в базе банка");
+        return;
+      }
 
-  fetch(`${DATABASE_URL}/requests.json`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(req)
-  }).then(() => {
-    alert("✅ Обращение зарегистрировано!");
-    document.getElementById("createForm").style.display = "none";
-  });
+      let clientExists = false;
+      for (let key in clients) {
+        if (clients[key].fio === fio && clients[key].codeWord === code) {
+          clientExists = true;
+          break;
+        }
+      }
+
+      if (!clientExists) {
+        alert("❌ Клиент не найден в базе банка. Обращение можно создать только для зарегистрированных клиентов.");
+        return;
+      }
+
+      // Создаём обращение
+      const req = {
+        fio,
+        codeWord: code,
+        topic,
+        description: desc,
+        status: "новое",
+        handledBy: currentUser,
+        timestamp: new Date().toISOString()
+      };
+
+      fetch(`${DATABASE_URL}/requests.json`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(req)
+      }).then(() => {
+        alert("✅ Обращение зарегистрировано!");
+        document.getElementById("createForm").style.display = "none";
+      });
+    });
 }
 
+// === ПРОВЕРКА ОБРАЩЕНИЯ ===
 function checkExistingRequest() {
   const fio = document.getElementById("checkFio").value;
   const code = document.getElementById("checkCode").value;
